@@ -3,15 +3,15 @@ public class Config {
     int simulationDays = 7;
     int initialPumps = 2;
     int maxPumps = 10;
-    int defaultFlowRate = 20;
-    int queueThreshold = 12;
-    int expansionDelay = 2;
-    int initialFuel = 10000;
-    int maxFuelCapacity = 15000;
-    int deliveryInterval = 24;
-    int deliveryVolume = 10000;
-    int deliveryDuration = 30;
-    int randomSeed = 1;
+    int defaultFlowRate = 20; // л/мин
+    int queueThreshold = 12; // мин
+    int expansionDelay = 2; // дня
+    int initialFuel = 10000; // л
+    int maxFuelCapacity = 15000; // л
+    int deliveryInterval = 24; // ч
+    int deliveryVolume = 10000; // л
+    int deliveryDuration = 30; // мин
+    int randomSeed = 42;
 
     private Config() {}
 

@@ -7,9 +7,11 @@ public class Car {
     public Car(int id, long arrivalTime, Random random)
     {
         this.id=id;
+        this.arrivalTime=arrivalTime;
         tankCapacity=10*(4+random.nextInt(5));
-        fuelLevel=(0.1+random.nextDouble()*0.8)*tankCapacity;
-        desiredFuel=Math.min(5+random.nextDouble()*(tankCapacity - fuelLevel),tankCapacity-fuelLevel);
+        fuelLevel=(10+random.nextInt(91))/100.0*tankCapacity;
+        desiredFuel=4+random.nextFloat()*(tankCapacity - fuelLevel-4);
+        //System.out.println(desiredFuel);
     }
     public double getDesiredFuel() {
         return desiredFuel;

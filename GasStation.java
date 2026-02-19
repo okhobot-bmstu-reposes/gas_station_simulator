@@ -9,6 +9,7 @@ public class GasStation {
     List<FuelPump> pumps;
     Queue<Car> queue;
     double fuelReserve, maxFuelCapacity, deliveryVolume;
+
     Integer findFreePumpIndx() {
         for (int i = 0; i < pumps.size(); i++)
             if (!pumps.get(i).isBusy())
@@ -22,39 +23,41 @@ public class GasStation {
             pump.setBusy(true);
             pump.setCurrentCar(car);
             car.setStartServiceTime(time);
-            long serviceTime=pump.getServiceTime();
-            car.setEndServiceTime(time+serviceTime);
+            long serviceTime = pump.getServiceTime();
+            car.setEndServiceTime(time + serviceTime);
             fuelReserve -= car.getDesiredFuel();
 
             pump.addWorkTime(serviceTime);
 
             stats.addServiced();
-            stats.addWaitingTime(time-car.getArrivalTime());
-            stats.checkMaxWaitingTime(time-car.getArrivalTime());
+            stats.addWaitingTime(time - car.getArrivalTime());
+            stats.checkMaxWaitingTime(time - car.getArrivalTime());
             stats.addServiceTime(serviceTime);
+            stats.checkMinFuelRemaining(fuelReserve);
 
             return new Event(EventType.SERVICE_END, car.getEndServiceTime());
         }
+        if (fuelReserve < car.getDesiredFuel())
+            stats.addRefused();
         return null;
     }
 
-    public GasStation(Statistics stats)
-    {
-        fuelReserve=Config.getInstance().getInitialFuel();
-        maxFuelCapacity=Config.getInstance().getMaxFuelCapacity();
-        deliveryVolume=Config.getInstance().getDeliveryVolume();
-        pumps=new ArrayList<>();
-        for(int i=0;i<Config.getInstance().getInitialPumps();i++)
-            pumps.add(new FuelPump(i, 0, Config.getInstance().getDefaultFlowRate()/60.0));
-        queue=new PriorityQueue<>((c1,c2) -> (int)(c1.getArrivalTime() - c2.getArrivalTime()));
-        this.stats=stats;
+    public GasStation(Statistics stats) {
+        fuelReserve = Config.getInstance().getInitialFuel();
+        maxFuelCapacity = Config.getInstance().getMaxFuelCapacity();
+        deliveryVolume = Config.getInstance().getDeliveryVolume();
+        pumps = new ArrayList<>();
+        queue = new PriorityQueue<>((c1, c2) -> (int) (c1.getArrivalTime() - c2.getArrivalTime()));
+        this.stats = stats;
+        for (int i = 0; i < Config.getInstance().getInitialPumps(); i++)
+            addPump(0, Config.getInstance().getDefaultFlowRate());
     }
 
     public void processCars(Queue<Event> events, long time) {
         stats.checkMaxQueueLen(queue.size());
 
         Integer pumpIndx = findFreePumpIndx();
-                                                        //System.out.println(pumpIndx+" "+queue.size());
+        // System.out.println(pumpIndx+" "+queue.size());
 
         while (queue.size() > 0 && pumpIndx != null) {
             Car car = queue.poll();
@@ -65,7 +68,8 @@ public class GasStation {
 
             if (car.getStartServiceTime() - car.getArrivalTime() > Config.getInstance().getQueueThreshold() * 60
                     && !events.stream().anyMatch(e -> e.getType() == EventType.PUMP_OPEN))
-                events.add(new Event(EventType.PUMP_OPEN, time + Config.getInstance().getExpansionDelay() * 24 * 60 * 60));
+                events.add(
+                        new Event(EventType.PUMP_OPEN, time + Config.getInstance().getExpansionDelay() * 24 * 60 * 60));
         }
     }
 
@@ -76,12 +80,16 @@ public class GasStation {
     public void deliveryFuel() {
         stats.addFuelRemaining(fuelReserve);
         stats.checkMinFuelRemaining(fuelReserve);
+        // System.out.println(fuelReserve);
 
-        fuelReserve = Math.max(Config.getInstance().getMaxFuelCapacity(), Math.min(fuelReserve + deliveryVolume, maxFuelCapacity));
+        fuelReserve = Math.max(Config.getInstance().getMaxFuelCapacity(),
+                Math.min(fuelReserve + deliveryVolume, maxFuelCapacity));
     }
 
     public void addPump(int openedAtDay, double flowRate) {
-        pumps.add(new FuelPump(pumps.size(), openedAtDay, flowRate/60.0));
+        if (pumps.size() >= Config.getInstance().getMaxPumps())
+            return;
+        pumps.add(new FuelPump(pumps.size(), openedAtDay, flowRate / 60.0));
         stats.setResultPumpsCount(pumps.size());
     }
 
@@ -91,8 +99,9 @@ public class GasStation {
                 pumps.get(i).setBusy(false);
             }
     }
-    public List<FuelPump> getPumps()
-    {
+
+    public List<FuelPump> getPumps() {
         return pumps;
     }
+
 }

@@ -21,7 +21,7 @@ public class CarGenerator {
     }
 
     long getDeltaTime(long time) {
-        return -Math.round(Math.log(random.nextDouble()) / getLambda(time));
+        return Math.round(-Math.log(random.nextDouble()) / getLambda(time)) *60;
     }
 
     public CarGenerator(Random random)

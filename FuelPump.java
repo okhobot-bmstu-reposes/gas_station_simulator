@@ -37,12 +37,12 @@ public class FuelPump {
     }
 
     public void addWorkTime(long time) {
-        //System.out.println(time);
+        //System.out.println(workTime);
         workTime += time;
     }
 
     public boolean isServiceEnded(long time) {
-        return !busy || time >= Math.ceil(currentCar.getDesiredFuel() / flowRate);
+        return !busy || time >= currentCar.getEndServiceTime();
     }
 
 }

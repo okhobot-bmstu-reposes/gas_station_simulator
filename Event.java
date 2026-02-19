@@ -1,6 +1,6 @@
 public class Event {
-    public EventType type=null;
-    public long time;
+    private EventType type=null;
+    private long time;
     public Event(EventType type, long time)
     {
         this.type=type;

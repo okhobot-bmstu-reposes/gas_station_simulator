@@ -1,16 +1,16 @@
 import java.util.List;
 
 public class Statistics {
-    double sumFuelRemaining = 0, minFuelRemaining = 0;
-    int arriived = 0, serviced = 0;
+    double sumFuelRemaining = 0, minFuelRemaining;
+    int arriived = 0, serviced = 0, refused=0;
     int maxQueueLen = 0, resultPumpsCount = 0, deliveryCount = 0;
     int startPumpsCount=0;
-    long sumWaitingTime = 0, maxWaitingTime = 0, sumServiceTime = 0, simulationTime;
+    long sumWaitingTime = 0, maxWaitingTime = 0, sumServiceTime = 0;
 
-    public Statistics(int startPumpsCount, long simulationTime)
+    public Statistics(int startPumpsCount)
     {
         this.startPumpsCount=startPumpsCount;
-        this.simulationTime=simulationTime;
+        this.minFuelRemaining=Config.getInstance().getMaxFuelCapacity();
     }
 
     public void setArriived(int arriived) {
@@ -19,6 +19,11 @@ public class Statistics {
 
     public void addServiced() {
         this.serviced++;
+    }
+
+    public void addRefused()
+    {
+        this.refused++;
     }
 
     public void checkMaxQueueLen(int maxQueueLen) {
@@ -53,21 +58,21 @@ public class Statistics {
         this.sumServiceTime += serviceTime;
     }
 
-    public String getString(List<FuelPump> pumps)
+    public String getString(List<FuelPump> pumps, long simulationTime)
     {
         String res="";
         res+="Всего прибыло автомобилей: "+arriived+";\n"; 
         res+="Обслужено автомобилей: "+serviced+";\n"; 
-        res+="Отказано (нехватка топлива): "+(arriived-serviced)+";\n"; 
-        res+="Среднее время ожидания в очереди: "+sumWaitingTime/serviced+";\n"; 
-        res+="Максимальное время ожидания: "+maxWaitingTime+";\n"; 
-        res+="Среднее время обслуживания: "+sumServiceTime/serviced+";\n"; 
+        res+="Отказано (нехватка топлива): "+refused+";\n"; 
+        res+="Среднее время ожидания в очереди: "+Math.round(sumWaitingTime/serviced /60.0 *10)/10.0+" мин;\n"; 
+        res+="Максимальное время ожидания: "+Math.round(maxWaitingTime /60.0 *10)/10.0+" мин;\n"; 
+        res+="Среднее время обслуживания: "+Math.round(sumServiceTime/serviced /60.0 *10)/10.0+" мин;\n"; 
         res+="Максимальная длина очереди: "+maxQueueLen+";\n"; 
         res+="Итоговое количество колонок: "+resultPumpsCount+";\n"; 
         res+="Количество открытых доп. колонок: "+(resultPumpsCount-startPumpsCount)+";\n"; 
         res+="Количество доставок топлива: "+deliveryCount+";\n"; 
-        res+="Средний остаток топлива: "+sumFuelRemaining/deliveryCount+";\n"; 
-        res+="Минимальный остаток топлива: "+minFuelRemaining+";\n"; 
+        res+="Средний остаток топлива: "+Math.round(sumFuelRemaining/deliveryCount)+" л;\n"; 
+        res+="Минимальный остаток топлива: "+Math.round(minFuelRemaining)+" л;\n"; 
         res+="Загруженность колонок (%):\n";
         for(int i=0;i<pumps.size();i++)
             res+=i+": "+pumps.get(i).getWorkTime()*100/simulationTime+'\n';
